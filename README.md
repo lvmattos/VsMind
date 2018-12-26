@@ -1,0 +1,2 @@
+# VsMind
+Memorize enquanto programa
