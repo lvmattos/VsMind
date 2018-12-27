@@ -1,26 +1,84 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+var statusBarItems: Array<vscode.StatusBarItem> = [];
+var questions: Array<Card> = [];
+var index: number = 0;
+
 export function activate(context: vscode.ExtensionContext) {
+  questions.push(new Card("Apple", "Maça"));
+  questions.push(new Card("Hi world", "Olá mundo"));
+  questions.push(new Card("Certainly", "Certamente"));
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-		console.log('Congratulations, your extension "vsmind" is now active!');
+  let disposable = vscode.commands.registerCommand("extension.vsMind", () => {
+    let statusBarTask = new StatusBarTask();
+    statusBarTask.addStatusBartask(questions[index].getFront(), 3);
+    statusBarTask.addStatusBartask(
+      "Show Answer",
+      2,
+      "extension.vsMindShowAnswer"
+    );
+    statusBarTask.addStatusBartask("Next", 0, "extension.vsMindNext");
+  });
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('extension.vsMind', () => {
-		// The code you place here will be executed every time your command is executed
+  let disposable2 = vscode.commands.registerCommand(
+    "extension.vsMindShowAnswer",
+    () => {
+      statusBarItems[0].text = questions[index].getBack();
+    }
+  );
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Vs Mind!');
-	});
+  let disposable3 = vscode.commands.registerCommand(
+    "extension.vsMindNext",
+    () => {
+      index++;
+      statusBarItems[0].text = questions[index].getFront();
+    }
+  );
 
-	context.subscriptions.push(disposable);
+  context.subscriptions.push(disposable);
+  context.subscriptions.push(disposable2);
+  context.subscriptions.push(disposable3);
+}
+
+class StatusBarTask {
+  public addStatusBartask(
+    label: string,
+    priority?: number,
+    command: string = ""
+  ): void {
+    let _statusBarItem = vscode.window.createStatusBarItem(
+      vscode.StatusBarAlignment.Left,
+      priority
+    );
+    _statusBarItem.text = label;
+    _statusBarItem.command = command;
+    _statusBarItem.show();
+    statusBarItems.push(_statusBarItem);
+  }
+}
+
+class Card {
+  private Front: string;
+  private Back: string;
+  private Difficulty: number;
+
+  constructor(front: string, back: string, difficulty: number = 0) {
+    this.Front = front;
+    this.Back = back;
+    this.Difficulty = difficulty;
+  }
+
+  getFront(): string {
+    return this.Front;
+  }
+
+  getBack(): string {
+    return this.Back;
+  }
+
+  getDifficulty(): number {
+    return this.Difficulty;
+  }
 }
 
 // this method is called when your extension is deactivated
